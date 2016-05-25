@@ -2,8 +2,6 @@
 title: API Reference
 
 language_tabs:
-  - shell
-  - ruby
   - python
 
 toc_footers:
@@ -18,21 +16,18 @@ search: true
 
 # Introduction
 
-Welcome to the Kittn API! You can use our API to access Kittn API endpoints, which can get information on various cats, kittens, and breeds in our database.
+Omicia provides an API based on the HTTPS protocol, using HTTP requests (GET,
+POST, PUT and DELETE) to securely transmit variation
+data, launch analyses and retrieve finished report data.
 
-We have language bindings in Shell, Ruby, and Python! You can view code examples in the dark area to the right, and you can switch the programming language of the examples with the tabs in the top right.
+Most invalid requests (e.g. for invalid parameter values) return an HTTP status of
+400, 404 or 422; authentication errors return an HTTP status of 401 or 403.
 
-This example API documentation page was created with [Slate](https://github.com/tripit/slate). Feel free to edit it and use it as a base for your own API's documentation.
+All dates and times are returned in PST.
 
 # Authentication
 
 > To authorize, use this code:
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-```
 
 ```python
 import kittn
@@ -48,9 +43,25 @@ curl "api_endpoint_here"
 
 > Make sure to replace `meowmeowmeow` with your API key.
 
-Kittn uses API keys to allow access to the API. You can register a new Kittn API key at our [developer portal](http://example.com/developers).
+With the exception of the online documentation, every request must authenticate
+against our database of API Keys, providing the login and password according
+to the HTTP basic access authentication method (see `Wikipedia - basic access`_).
+Please contact support_ to have them generate an API Key for your application.
 
-Kittn expects for the API key to be included in all API requests to the server in a header that looks like the following:
+An API Key is tied to a specific Opal user, referred to as
+the API User hereon. Any email messages generated when using the Opal API are sent
+to the API User.
+
+Omicia stores passwords in a one-way encrypted hash according to industry
+standard security procedures.  Passwords cannot be recovered,
+but we can issue a new API key upon request.
+
+The API uses SSL-encrypted HTTP for its protocol, via the normal port for
+secure HTTP, 443. Attempts to query the server with non-encrypted HTTP
+request on port 80 (ie. http://api.omicia.com instead of
+https://api.omicia.com) will return a 302 Redirect HTTP response,
+with no response body provided.
+
 
 `Authorization: meowmeowmeow`
 
@@ -58,16 +69,9 @@ Kittn expects for the API key to be included in all API requests to the server i
 You must replace <code>meowmeowmeow</code> with your personal API key.
 </aside>
 
-# Kittens
+# Clinical Reports
 
-## Get All Kittens
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get
-```
+## Get All Clinical Reports
 
 ```python
 import kittn
@@ -76,57 +80,77 @@ api = kittn.authorize('meowmeowmeow')
 api.kittens.get()
 ```
 
-```shell
-curl "http://example.com/api/kittens"
-  -H "Authorization: meowmeowmeow"
-```
-
 > The above command returns JSON structured like this:
 
 ```json
-[
-  {
-    "id": 1,
-    "name": "Fluffums",
-    "breed": "calico",
-    "fluffiness": 6,
-    "cuteness": 7
-  },
-  {
-    "id": 2,
-    "name": "Max",
-    "breed": "unknown",
-    "fluffiness": 5,
-    "cuteness": 10
-  }
-]
+[    {
+        "objects": [
+            {
+                "id": 1202,
+                "workspace_id": 71,
+                "created_by": 110,
+                "created_on": "2014-12-02T00:12:10",
+                "panel_id": 1200,
+                "genome_id": 119,
+                "filter_id": 727,
+                "status": "READY TO REVIEW",
+                "test_type": "panel",
+                "sample_collected_date": "2014-12-12T00:00:00",
+                "sample_received_date": "2014-12-12T00:00:00",
+                "accession_id": "AB12345",
+                "report_approved_date": null,
+                "variant_report_id": 186,
+                "vaast_report_id": null,
+                "include_cosmic": false,
+                "version": 1,
+                "variant_count": 13,
+                "reviewed_variant_count": 0,
+                "patient_dict": {
+                    "first_name": "John",
+                    "last_name": "Doe",
+                    "dob_month": 7,
+                    "sex": "Male",
+                    "dob_year": 2014,
+                    "indication_for_testing": "asthma",
+                    "ordering_physician": "Jane Buck",
+                    "specimen_type": "blood",
+                    "ethnicity": "White",
+                    "dob_day": 3
+                }
+            }
+        ]
+    }
 ```
 
-This endpoint retrieves all kittens.
+List all Reports. This endpoint can also be used to find reports using
+one of
+
+- Accession ID: this is is the ID associated with the report at creation
+- External ID: the external ID associated with a genome at upload
+- Genome ID: the internal Opal ID given to the genome at upload
 
 ### HTTP Request
 
-`GET http://example.com/api/kittens`
+`GET https://api.omicia.com/reports`
 
 ### Query Parameters
 
-Parameter | Default | Description
---------- | ------- | -----------
-include_cats | false | If set to true, the result will also include cats.
-available | true | If set to false, the result will include kittens that have already been adopted.
+Parameter | Required | Value | Limits
+--------- | -------- | ----- | -----------
+report_type     |  String      |      No    |     "Variant Report", "VAAST Trio Report"
+report_status   |  String      |      No    |     "WAITING", "SUBMITTED", "RUNNING", "COMPLETE", "FAILED"
+order_by        |  String      |      No    |     "run_date", "report_type", "report_status"
+limit           |  Int         |      No    |     Positive
+offset          |  Int         |      No    |     Positive
+external_id     |  String      |      No    |     Alphanumeric string - substring match
+accession_id    |  String      |      No    |     Alphanumeric string - substring match
+genome_id       |  Int         |      No    |     A valid genome ID - exact match
 
 <aside class="success">
 Remember — a happy kitten is an authenticated kitten!
 </aside>
 
-## Get a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get(2)
-```
+## Get one Clinical Report
 
 ```python
 import kittn
@@ -135,34 +159,97 @@ api = kittn.authorize('meowmeowmeow')
 api.kittens.get(2)
 ```
 
-```shell
-curl "http://example.com/api/kittens/2"
-  -H "Authorization: meowmeowmeow"
-```
-
 > The above command returns JSON structured like this:
 
 ```json
 {
-  "id": 2,
-  "name": "Max",
-  "breed": "unknown",
-  "fluffiness": 5,
-  "cuteness": 10
+    "id": 1202,
+    "workspace_id": 71,
+    "type": "clinical_report",
+    "created_by": 110,
+    "created_on": "2014-12-02T00:12:10",
+    "panel_id": 1200,
+    "genome_id": 119,
+    "filter_id": 727,
+    "status": "READY TO REVIEW",
+    "test_type": "panel",
+    "sample_collected_date": "2014-12-12T00:00:00",
+    "sample_received_date": "2014-12-12T00:00:00",
+    "accession_id": "FLCMRCG479Y",
+    "report_approved_date": null,
+    "variant_report_id": 186,
+    "vaast_report_id": null,
+    "include_cosmic": false,
+    "version": 1,
+    "variant_count": 0,
+    "reviewed_variant_count": 0,
+    "filter_name": "None",
+    "patient_dict": {
+        "first_name": "John",
+        "last_name": "Doe",
+        "dob_month": 7,
+        "sex": "Male",
+        "dob_year": 2014,
+        "indication_for_testing": "asthma",
+        "ordering_physician": "Jane Buck",
+        "specimen_type": "blood",
+        "ethnicity": "White",
+        "dob_day": 3
+    }
 }
 ```
 
-This endpoint retrieves a specific kitten.
+This endpoint retrieves a specific clinical report.
+
+In order to fetch an extended clinical report, which includes variant information and patient fields,
+the parameter "extended" can be used with a value of "True."
 
 <aside class="warning">Inside HTML code blocks like this one, you can't use Markdown, so use <code>&lt;code&gt;</code> blocks to denote code.</aside>
 
 ### HTTP Request
 
-`GET http://example.com/kittens/<ID>`
+`GET https://api.omicia.com/reports/<id>`
 
 ### URL Parameters
 
-Parameter | Description
---------- | -----------
-ID | The ID of the kitten to retrieve
+Parameter | Value | Required | Limits
+--------- | ----- | -------- | ------
+extended  | String | No | "True"
 
+## Get Final PDF Report
+
+```python
+import kittn
+
+api = kittn.authorize('meowmeowmeow')
+api.kittens.get(2)
+```
+
+Fetch a PDF report for an approved clinical report.
+Example usage: <a href="https://github.com/Omicia/omicia_api_examples/blob/master/python/ClinicalReportLaunchers/get_clinical_report_pdf.py">Get a clinical report final PDF</a>
+
+<aside class="warning">This endpoint will return a response of status 422 if the requested report is not yet approved.</aside>
+
+### HTTP Request
+
+`GET https://api.omicia.com/reports/<id>/pdf_report`
+
+## Get Preview PDF Report
+
+```python
+import kittn
+
+api = kittn.authorize('meowmeowmeow')
+api.kittens.get(2)
+```
+
+Fetch a preview PDF report for an unapproved clinical report.
+
+Example usage: <a href="https://github.com/Omicia/omicia_api_examples/blob/master/python/ClinicalReportLaunchers/get_clinical_report_pdf.py">Get a clinical report final PDF</a>
+
+<aside class="warning">This endpoint will return a response of status 422 if the requested report is already approved, or if it is still processing
+or waiting for genomes.</aside>
+
+### HTTP Request
+
+`GET https://api.omicia.com/reports/<id>/pdf_preview`
