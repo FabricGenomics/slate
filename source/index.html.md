@@ -96,7 +96,6 @@ Opal assigns a unique ID to all uploaded genomes. These IDs are used to identify
 • [Upload a folder of genomes, using a manifest](https://github.com/Omicia/omicia_api_examples/blob/master/python/upload_genomes_folder_with_manifest.py)
 
 
-
 # Clinical Reports
 
 ## Get All Clinical Reports
