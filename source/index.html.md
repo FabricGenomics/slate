@@ -69,6 +69,34 @@ with no response body provided.
 You must replace <code>meowmeowmeow</code> with your personal API key.
 </aside>
 
+# Uploading Genomes
+
+Once you obtain an API Key you can start uploading your samples to Opal for annotation, analysis and clinical report generation. API Keys are associated with a single Workspace (a group of Projects and Users), and genomes must be uploaded to specific projects within that Workspace. You may either use an existing project, or leverage the API to create a new project for this purpose.
+
+To create a Project use a POST request against the Create project endpoint. You will need to specify a Project name and optionally a description and a parameter to indicate how the project should be shared with existing and future members of your workspace. Projects are identified by a numeric ID. This ID is necessary when uploading, listing and otherwise accessing genomes and reports.
+
+To upload a VCF file use the Upload endpoint. For example, to upload a VCF file to project 10, one would create a PUT request against
+
+https://api.omicia.com/projects/10/genomes
+specifying an external ID, genome label, sex, assembly version and format as query parameters (as opposed to form parameters), and including the entirety of the file as the body of the request. The assembly version must be hg19 (internally we handle GRCh37 and hg19 interchangeably).
+
+The Omicia Api accepts VCF 4.0+ (see http://samtools.github.io/hts-specs/VCFv4.2.pdf) preferably containing a single sample column. Multi-sample VCF’s can be uploaded, however the ID returned by the upload call cannot be used to launch reports. The Opal VCF parser accepts quality and read depth data in a variety of formats. Please refer to the Opal user guide for more information, or contact support for specific questions.
+
+Upon successful parsing, the uploaded genome is queued for annotation by the Omicia Pipeline. Panel and exome VCF’s usually annotate within minutes, while full genomes can take longer.
+
+If any genome fails to annotate, the system will send an email notification to the API User as well as the Omicia Support Team.
+
+Opal assigns a unique ID to all uploaded genomes. These IDs are used to identify the genome within Opal. External IDs are an alternate method to identify and find genomes within Opal. Opal does not enforce uniqueness of the external ID.
+
+## Relevant example Python Scripts
+
+• [Create a project](https://github.com/Omicia/omicia_api_examples/blob/master/python/create_project.py)
+• [Upload a genome](https://github.com/Omicia/omicia_api_examples/blob/master/python/upload_genome.py)
+• [Upload a folder of genomes](https://github.com/Omicia/omicia_api_examples/blob/master/python/upload_genomes_folder.py)
+• [Upload a folder of genomes, using a manifest](https://github.com/Omicia/omicia_api_examples/blob/master/python/upload_genomes_folder_with_manifest.py)
+
+
+
 # Clinical Reports
 
 ## Get All Clinical Reports
